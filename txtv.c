@@ -20,6 +20,19 @@ void init_line(void)
     tail->next=tail;
     tail->prev=head;
 }
+void free_all(void)
+{
+line *p, *s;
+p=head->next;
+    while(p!=tail)
+    {
+        s=p;
+        p=p->next;
+        free(s);
+    }
+    head->next=tail;
+    tail->prev=head;
+}
 void load_file(void)
 {
     FILE *fp;
@@ -81,7 +94,7 @@ void move_line(int d, line **t)
 }
 void key_proc(void)
 {
-    char a;
+    char a,flag=0;
     line *t;
     t=head->next;
     now=1;
@@ -101,25 +114,34 @@ void key_proc(void)
                 move_line(23,&t);
                 break;
             case ' ':
-                exit(0);
+                flag=1;
                 break;
             default:
                 break;
         }
         system("clear");
         show_page(t);
+        if(flag==1)
+            break;
     }
 }
 int main(int argc, char **argv)
 {
+    int i;
     if(argc<2)
     {
-        printf("\nUSAGE : txtv <filename>");
+        printf("\nUSAGE : txtv <filenames>");
        system("stty cooked");
         exit(0);
     }
-    strcpy(filename,argv[1]);
     init_line();
+    for(i=1;i<argc;i++)
+    {
+    strcpy(filename,argv[i]);
     load_file();
     key_proc();
+    free_all();
+    system("clear");
+    }
+    exit(0);
 }
