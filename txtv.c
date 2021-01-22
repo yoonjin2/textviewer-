@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 struct _line
 {
     char *buf;
@@ -40,7 +41,7 @@ void load_file(void)
     line *t;
     if((fp=fopen(filename,"rt"))==NULL)
     {
-        puts("\nCANNOT READ");
+        perror("\nCANNOT READ");
         exit(1);
     }
     total=0;
@@ -49,12 +50,12 @@ void load_file(void)
         fgets(buf,255,fp);
         if((char *)(t=(line *)malloc(sizeof(line)))==NULL)
         {
-            puts("\nOUT OF MEMORY");
+            perror("\nOUT OF MEMORY");
             exit(1);
         }
     if((t->buf=(char *)malloc(strlen(buf)))==NULL)
         {
-            puts("\nOUT OF MEMORY");
+            perror("\nOUT OF MEMORY");
             exit(1);
         }
     strcpy(t->buf,buf);
@@ -102,27 +103,37 @@ void key_proc(void)
     show_page(t);
     while(1)
     {
-        system("stty raw");
-        a=getchar();
-        system("stty cooked");
-        switch(a)
+        char a[4],x,flag=0;
+        for(x=0;x<3;x++)
         {
-            case 65:
-                move_line(-23,&t);
-                break;
-            case 66:
-                move_line(23,&t);
-                break;
-            case ' ':
+            system("stty raw");
+            a[x]=getchar();
+            system("stty cooked");
+            if(a[x]=='q')
+            {
                 flag=1;
                 break;
-            default:
-                break;
+            }
         }
-        system("clear");
-        show_page(t);
         if(flag==1)
             break;
+        system("stty cooked");
+        if(a[0]==27 & a[1]==91)
+            switch(a[2])
+            {
+                case 65:
+                    move_line(-1,&t);
+                    break;
+                case 66:
+                    move_line(1,&t);
+                    break;
+                case 50:
+                    break;
+            }
+        if(a[2]=='q')
+            break;
+        system("clear");
+        show_page(t);
     }
 }
 int main(int argc, char **argv)
